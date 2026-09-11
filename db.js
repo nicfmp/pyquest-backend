@@ -2,8 +2,6 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-// O Render usa certificado autoassinado no Postgres interno — rejectUnauthorized:false
-// evita erro de SSL. Em local (sem "render.com" na URL) roda sem SSL normalmente.
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL?.includes('render.com')
@@ -19,6 +17,14 @@ export async function initDB() {
       senha_hash TEXT NOT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT now()
     )
+  `);
+
+  // Adicionadas depois da primeira versão do banco — IF NOT EXISTS evita
+  // quebrar quem já tinha conta antes dessas colunas existirem.
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS data_nascimento DATE`);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users (username)
   `);
 
   await pool.query(`
