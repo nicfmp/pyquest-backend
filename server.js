@@ -4,14 +4,16 @@ import cors from 'cors';
 import { initDB } from './db.js';
 import authRoutes from './routes/auth.js';
 import progressRoutes from './routes/progress.js';
+import gameProgressRoutes from './routes/gameProgress.js';
 
 const app = express();
 
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
-app.use(express.json());
+app.use(express.json({ limit: '200kb' }));
 
 app.use('/api', authRoutes);
 app.use('/api', progressRoutes);
+app.use('/api', gameProgressRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });

@@ -36,4 +36,12 @@ export async function initDB() {
       PRIMARY KEY (user_id, quest_id)
     )
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS game_progress (
+      user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      state JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `);
 }
