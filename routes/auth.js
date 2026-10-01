@@ -5,6 +5,13 @@ import { pool } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { QUEST_IDS } from '../constants.js';
 
+import { summarizeGame } from '../gameSummary.js';
+
+async function loadGameProgress(userId) {
+  const result = await pool.query('SELECT state FROM game_progress WHERE user_id = $1', [userId]);
+  return summarizeGame(result.rows[0]?.state);
+}
+
 const router = Router();
 const SALT_ROUNDS = 10;
 
@@ -126,6 +133,7 @@ router.post('/login', async (req, res) => {
     token,
     usuario: formatUsuario(user),
     progress: buildProgressMap(progressResult.rows),
+    gameProgress: await loadGameProgress(user.id),
   });
 });
 
@@ -145,6 +153,7 @@ router.get('/me', requireAuth, async (req, res) => {
   return res.json({
     usuario: formatUsuario(user),
     progress: buildProgressMap(progressResult.rows),
+    gameProgress: await loadGameProgress(user.id),
   });
 });
 
